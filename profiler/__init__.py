@@ -8,6 +8,9 @@ from openerp.addons.web.http import JsonRequest
 from openerp.service.server import ThreadedServer
 # from openerp.api import make_wrapper as api_make_wrapper
 import os
+import logging
+
+_logger = logging.getLogger(__name__)
 
 def patch_openerp():
     """Modify OpenERP/Odoo entry points so that profile can record.
@@ -22,18 +25,18 @@ def patch_openerp():
 
     def dispatch(*args, **kwargs):
         print "hola mundo 1"
-        import pdb;pdb.set_trace()
+        # import pdb;pdb.set_trace()
         with profiling():
             return orig_dispatch(*args, **kwargs)
         print "hola mundo 2"
-        import pdb;pdb.set_trace()
+        # import pdb;pdb.set_trace()
     JsonRequest.dispatch = dispatch
 
 def patch_start():
     origin_start = ThreadedServer.start
     def start(*args, **kwargs):
         if openerp.tools.config['test_enable']:
-            import pdb;pdb.set_trace()
+            # import pdb;pdb.set_trace()
             core.enabled = True
         return origin_start(*args, **kwargs)
     ThreadedServer.start = start
@@ -96,8 +99,8 @@ def print_stats():
     # pprint.pprint(stats_filter_sorted)
 
     for file_data, stats in stats_filter_sorted:
-        print "%s:%s->%s" % file_data,
-        print "stats", stats
+        _logger.info("%s:%s->%s" % file_data)
+        _logger.info(str(stats))
 
 
 def patch_orm_methods():
