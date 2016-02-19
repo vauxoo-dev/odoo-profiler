@@ -1,16 +1,16 @@
 import controllers  # noqa
 import openerp
 from cProfile import Profile
-# from . import tests
 from . import core
 from .core import profiling
 from openerp.addons.web.http import JsonRequest
 from openerp.service.server import ThreadedServer
-# from openerp.api import make_wrapper as api_make_wrapper
 import os
 import logging
 
+
 _logger = logging.getLogger(__name__)
+
 
 def patch_openerp():
     """Modify OpenERP/Odoo entry points so that profile can record.
@@ -24,43 +24,21 @@ def patch_openerp():
     orig_dispatch = JsonRequest.dispatch
 
     def dispatch(*args, **kwargs):
-        print "hola mundo 1"
-        # import pdb;pdb.set_trace()
         with profiling():
             return orig_dispatch(*args, **kwargs)
-        print "hola mundo 2"
-        # import pdb;pdb.set_trace()
     JsonRequest.dispatch = dispatch
 
 def patch_start():
     origin_start = ThreadedServer.start
     def start(*args, **kwargs):
         if openerp.tools.config['test_enable']:
-            # import pdb;pdb.set_trace()
             core.enabled = True
         return origin_start(*args, **kwargs)
     ThreadedServer.start = start
 
-def patch_stop():
-    origin_stop = ThreadedServer.stop
-
-    def stop(*args, **kwargs):
-        if openerp.tools.config['test_enable']:
-            dump_stats()
-            print_stats()
-        return origin_stop(*args, **kwargs)
-    ThreadedServer.stop = stop
 
 def dump_stats():
-    from tempfile import mkstemp
-    import os
-
-    # handle, path = mkstemp(prefix='profiling')
     core.profile.dump_stats(os.path.expanduser('~/.openerp_server.stats'))
-    # stream = os.fdopen(handle)
-    # os.unlink(path)  # TODO POSIX only ?
-    # stream.seek(0)
-    # return path
 
 
 def print_stats():
@@ -70,7 +48,7 @@ def print_stats():
     # fname = "/Users/moylop260/Downloads/openerp_2016-02-16T07-27-10.684347.stats"
     fname = os.path.expanduser('~/.openerp_server.stats')
     fstats = pstats.Stats(fname)
-    fstats.sort_stats('cumulative')
+    # fstats.sort_stats('cumulative')
     stats = fstats.stats
 
     # filter_fnames = ['addons-vauxoo']
@@ -104,25 +82,24 @@ def print_stats():
 
 
 def patch_orm_methods():
+    """Modify OpenERP/Odoo ORM methods so that profile can record."""
     origin_make_wrapper = openerp.api.make_wrapper
 
     def make_wrapper(*args, **kwargs):
-        core.enabled = True
         with profiling():
             return origin_make_wrapper(*args, **kwargs)
     openerp.api.make_wrapper = make_wrapper
 
+
 def create_profile():
     """Create the global, shared profile object."""
     core.profile = Profile()
-    print "ya paso por aqui"
 
 
 def post_load():
     create_profile()
     patch_openerp()
     if openerp.tools.config['test_enable']:
-        print "hola mundo"*20
+        # Enable profile in test mode for orm methods.
         core.enabled = True
-        patch_stop()
         patch_orm_methods()
