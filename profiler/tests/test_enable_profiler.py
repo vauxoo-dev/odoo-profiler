@@ -17,10 +17,10 @@ _logger = logging.getLogger(__name__)
     #     _logger.info('no es un error en realidad: Enable Profiler')
 
 
-@at_install(False)
-@post_install(True)
-class DumpProfiler(TransactionCase):
-    def test_dump_profiler(self):
-        'Aqui voy 2'
-        _logger.info('DUMP profiler')
-        core.profile.dump_stats('/tmp/borrar.stats')
+# @at_install(False)
+# @post_install(True)
+# class DumpProfiler(TransactionCase):
+#     def test_dump_profiler(self):
+#         'Aqui voy 2'
+#         _logger.info('DUMP profiler')
+        # core.profile.dump_stats('/tmp/borrar.stats')
