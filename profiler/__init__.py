@@ -1,6 +1,6 @@
 import controllers  # noqa
 from cProfile import Profile
-
+# from . import tests
 
 def patch_openerp():
     """Modify OpenERP/Odoo entry points so that profile can record.
