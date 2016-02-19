@@ -1,4 +1,4 @@
-import controllers  # noqa
+from . import controllers
 import openerp
 from cProfile import Profile
 from . import core
@@ -7,6 +7,7 @@ from openerp.addons.web.http import JsonRequest
 from openerp.service.server import ThreadedServer
 import os
 import logging
+import pstats
 
 
 _logger = logging.getLogger(__name__)
@@ -43,15 +44,12 @@ def dump_stats():
     core.profile.dump_stats(os.path.expanduser('~/.openerp_server.stats'))
 
 
-def print_stats():
-    import pstats
-
+def print_stats(filter_names=['.py']):
     fname = os.path.expanduser('~/.openerp_server.stats')
     fstats = pstats.Stats(fname)
     # fstats.sort_stats('cumulative')
     stats = fstats.stats
 
-    filter_fnames = ['.py']
     stats_filter = {}
     for stat in stats:
         for tuple_stats in stats[stat][4].keys():
