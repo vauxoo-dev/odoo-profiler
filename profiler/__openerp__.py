@@ -23,6 +23,7 @@
 {
     'name': 'profiler',
     'version': '8.0.0.1',
+    'sequence': 100,
     'category': 'devtools',
     'description': """
     cprofile integration for Odoo/OpenERP. Check the Profiler menu in admin menu
