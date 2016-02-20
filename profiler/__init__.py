@@ -1,4 +1,4 @@
-from . import controllers
+from . import controllers  # noqa
 import openerp
 from cProfile import Profile
 from . import core
@@ -44,7 +44,7 @@ def dump_stats():
     core.profile.dump_stats(os.path.expanduser('~/.openerp_server.stats'))
 
 
-def print_stats(filter_names=['.py']):
+def print_stats(filter_fnames=['.py']):
     fname = os.path.expanduser('~/.openerp_server.stats')
     fstats = pstats.Stats(fname)
     # fstats.sort_stats('cumulative')
@@ -92,6 +92,17 @@ def create_profile():
     core.profile = Profile()
 
 
+def patch_stop():
+    origin_stop = ThreadedServer.stop
+
+    def stop(*args, **kwargs):
+        if openerp.tools.config['test_enable']:
+            dump_stats()
+            print_stats()
+        return origin_stop(*args, **kwargs)
+    ThreadedServer.stop = stop
+
+
 def post_load():
     create_profile()
     patch_openerp()
@@ -99,3 +110,4 @@ def post_load():
         # Enable profile in test mode for orm methods.
         core.enabled = True
         patch_orm_methods()
+        patch_stop()
