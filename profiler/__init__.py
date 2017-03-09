@@ -4,7 +4,7 @@ import os
 from cProfile import Profile
 
 import odoo
-from odoo.http import JsonRequest
+from odoo.http import WebRequest
 from odoo.service.server import ThreadedServer
 
 from . import controllers  # noqa
@@ -23,13 +23,14 @@ def patch_odoo():
 
     For instance, OpenERP 7 spawns a new thread for each request.
     """
-    _logger.info('Patching odoo.addons.web.http.JsonRequest.dispatch')
-    json_orig_dispatch = JsonRequest.dispatch
+    _logger.info('Patching odoo.http.WebRequest._call_function')
+    webreq_f_origin = WebRequest._call_function
 
-    def json_dispatch(*args, **kwargs):
+    def webreq_f(*args, **kwargs):
         with profiling():
-            return json_orig_dispatch(*args, **kwargs)
-    JsonRequest.dispatch = json_dispatch
+            return webreq_f_origin(*args, **kwargs)
+    WebRequest._call_function = webreq_f
+
 
 def dump_stats():
     """Dump stats to standard file"""
